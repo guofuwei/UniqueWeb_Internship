@@ -1247,6 +1247,55 @@ this is the last line
 
 
 
+# makefile命令
+
+## 简单示例
+
+```c
+//hello.c文件
+#include <stdio.h>
+
+int main(){
+	printf("hello world\n");
+	return 0;
+}
+```
+
+````makefile
+//makefile文件
+# helloworld is a binary file
+helloworldi : hello.o
+	echo "good"
+	gcc -o helloworld hello.o
+hello.o : hello.c
+	gcc -c -o hello.o hello.c
+````
+
+之后直接执行`make`命令就会生成helloworld可执行文件
+
+## 宏
+
+### 自定义宏
+
+在makefile中说明CC=gcc等，使用时直接使用$(CC)
+
+### 内部宏
+
+| 内部宏 | 功能                                     |
+| ------ | ---------------------------------------- |
+| $@     | 当前依赖关系中的目标文件名，不包括后缀。 |
+| $^     | 当前依赖关系中，发生改变的前提文件       |
+| $$     | 字符"$"                                  |
+
+##  other
+
+`clean`命令帮我们清除不需要的文件
+
+```makefile
+clean:
+	rm -rf *.o
+```
+
 
 
 
@@ -2417,6 +2466,116 @@ apt 命令执行需要超级管理员权限(root)。
 
 
 
+# systemd
+
+## 主命令systemctl
+
+```shell
+systemctl start|restart|stop unit
+systemctl reload nginx
+systemctl status nginx
+systemctl enable|disable nginx # 设置|取消开机自启动
+systemctl reboot # 重启
+systemctl poweroff # 退出系统并关闭电源
+# 重载所有修改过的配置文件
+$ sudo systemctl daemon-reload
+# 杀死一个服务的所有子进程
+$ sudo systemctl kill apache.service
+# 列出正在运行的 Unit
+
+```
+
+```shell
+# 列出正在运行的 Unit
+$ systemctl list-units
+
+# 列出所有Unit，包括没有找到配置文件的或者启动失败的
+$ systemctl list-units --all
+
+# 列出所有没有运行的 Unit
+$ systemctl list-units --all --state=inactive
+
+# 列出所有加载失败的 Unit
+$ systemctl list-units --failed
+
+# 列出所有正在运行的、类型为 service 的 Unit
+$ systemctl list-units --type=service
+```
 
 
-​	
+
+## systemd-analyze
+
+`systemd-analyze`命令用于查看启动耗时。	
+
+```bash
+# 查看启动耗时
+$ systemd-analyze                                                                                       
+
+# 查看每个服务的启动耗时
+$ systemd-analyze blame
+
+# 显示瀑布状的启动过程流
+$ systemd-analyze critical-chain
+
+# 显示指定服务的启动流
+$ systemd-analyze critical-chain atd.service
+```
+
+### 3.3 hostnamectl
+
+`hostnamectl`命令用于查看当前主机的信息。
+
+> ```bash
+> # 显示当前主机的信息
+> $ hostnamectl
+> 
+> # 设置主机名。
+> $ sudo hostnamectl set-hostname rhel7
+> ```
+
+### 3.4 localectl
+
+`localectl`命令用于查看本地化设置。
+
+> ```bash
+> # 查看本地化设置
+> $ localectl
+> 
+> # 设置本地化参数。
+> $ sudo localectl set-locale LANG=en_GB.utf8
+> $ sudo localectl set-keymap en_GB
+> ```
+
+### 3.5 timedatectl
+
+`timedatectl`命令用于查看当前时区设置。
+
+> ```bash
+> # 查看当前时区设置
+> $ timedatectl
+> 
+> # 显示所有可用的时区
+> $ timedatectl list-timezones                                                                                   
+> 
+> # 设置当前时区
+> $ sudo timedatectl set-timezone America/New_York
+> $ sudo timedatectl set-time YYYY-MM-DD
+> $ sudo timedatectl set-time HH:MM:SS
+> ```
+
+### 3.6 loginctl
+
+`loginctl`命令用于查看当前登录的用户。
+
+> ```bash
+> # 列出当前session
+> $ loginctl list-sessions
+> 
+> # 列出当前登录用户
+> $ loginctl list-users
+> 
+> # 列出显示指定用户的信息
+> $ loginctl show-user ruanyf
+> ```
+
