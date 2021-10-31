@@ -88,7 +88,7 @@ Git is a free software
 8d767a0 HEAD@{4}: commit (initial): add readme.txt
 ```
 
-## *git restore <file>*可以放弃工作区的修改
+## git restore <file>可以放弃工作区的修改
 
 ````shell
 # ubuntu@VM-4-7-ubuntu:~/tmp/learngit$ git status
@@ -242,7 +242,7 @@ Saved working directory and index state WIP on dev: a18c371 fix confilct is so e
 On branch dev
 Changes to be committed:
   (use "git restore --staged <file>..." to unstage)
-	new file:   hello.py
+	new file:   hello.py	
 
 Dropped refs/stash@{0} (2466f2f3a8d466849c71d8d8c3d4d63a03c24e8f)
 ```
@@ -406,7 +406,7 @@ Automatic merge failed; fix conflicts and then commit the result.
 
 
 
-### 配置别名
+## 配置别名
 
 目的：简化命令
 
