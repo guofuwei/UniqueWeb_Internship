@@ -202,6 +202,9 @@ int skip_list_search(skip_list* list,int key,int &find_value){
         while(((cur=prev->next[i])!=NULL)&&(cur->key<key)){
             prev=cur;
         }
+        if((cur!=NULL)&&(cur->key==key)){
+            break;
+        }
     }
     if((cur!=NULL)&&(cur->key==key)){
         //上面的cur!=NULL保证cur->key不会报错

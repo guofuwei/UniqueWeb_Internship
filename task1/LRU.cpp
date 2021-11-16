@@ -5,14 +5,14 @@ typedef struct LRUCache{
     int value;
     int capacity;
     struct LRUCache *next;
-    struct LRUCache *prev;//ÂèåÂêëÈìæË°®
-    UT_hash_handle hh;//‰øùËØÅuthashÊ≠£Â∏∏Â∑•‰Ωú
+    struct LRUCache *prev;//À´œÚ¡¥±Ì
+    UT_hash_handle hh;//±£÷§uthash’˝≥£π§◊˜
 } LRUCache;
 
 LRUCache *uthash=NULL;
 
 void ListAdd(LRUCache *head,LRUCache *s){
-    //Â∞ÜsËäÇÁÇπÊèíÂÖ•Âà∞ÈìæË°®È¶ñ
+    //Ω´sΩ⁄µ„≤Â»ÎµΩ¡¥±Ì ◊
     s->next=head->next;
     s->prev=head;
     head->next->prev=s;
@@ -20,22 +20,22 @@ void ListAdd(LRUCache *head,LRUCache *s){
 }
 
 void ListDel(LRUCache *s){
-    //Âà†Èô§‰∏Ä‰∏™ËäÇÁÇπ
+    //…æ≥˝“ª∏ˆΩ⁄µ„
     s->prev->next=s->next;
     s->next->prev=s->prev;
 }
 
 LRUCache* InitLRUCache(int capacity){
-    //ÂàùÂßãÂåñLRUÈìæË°®
+    //≥ı ºªØLRU¡¥±Ì
     LRUCache* ListHead=(LRUCache*)malloc(sizeof(LRUCache));
     ListHead->capacity=capacity;
     ListHead->prev=ListHead;
     ListHead->next=ListHead;
-    //ËÆæÁΩÆÂ§¥ËäÇÁÇπÁöÑ‰∏ã‰∏Ä‰∏™Âíå‰∏ä‰∏Ä‰∏™ËäÇÁÇπÈÉΩÊòØËá™Â∑±ÂèØ‰ª•ËäÇÁúÅ‰∏Ä‰∏™Â∞æËäÇÁÇπÂΩ¢ÊàêÂæ™ÁéØÂèåÂêëÂàóË°®
+    //…Ë÷√Õ∑Ω⁄µ„µƒœ¬“ª∏ˆ∫Õ…œ“ª∏ˆΩ⁄µ„∂º «◊‘º∫ø…“‘Ω⁄ °“ª∏ˆŒ≤Ω⁄µ„–Œ≥…—≠ª∑À´œÚ¡–±Ì
     return ListHead;
 }
 
-//‰∏ãÈù¢‰∏ªË¶ÅÂÆûÁé∞getÂíåset‰∏§‰∏™ÊñπÊ≥ï
+//œ¬√Ê÷˜“™ µœ÷get∫Õset¡Ω∏ˆ∑Ω∑®
 int GetLRUCache(LRUCache *head,int key){
     LRUCache *s;
     HASH_FIND_INT(uthash,&key,s);
@@ -43,34 +43,34 @@ int GetLRUCache(LRUCache *head,int key){
         return -1;
     }
     else{
-        //Âà†Èô§ÈìæË°®ÂΩìÂâç‰ΩçÁΩÆ
+        //…æ≥˝¡¥±Ìµ±«∞Œª÷√
         ListDel(s);
-        //Â∞ÜËäÇÁÇπÊ∑ªÂä†Âà∞Â§¥ÈÉ®
+        //Ω´Ω⁄µ„ÃÌº”µΩÕ∑≤ø
         ListAdd(head,s);
         return s->value;
     }
 }
 
 void SetLRUCache(LRUCache *head,int key,int value){
-    //ÂàÜ‰∏∫‰∏âÁßçÊÉÖÂÜµ
-    //Á¨¨‰∏ÄÁßçËØ•keyÂ∑≤ÁªèÂ≠òÂú®ÔºåÁõ¥Êé•Êõ¥Êñ∞valueÂÄº
+    //∑÷Œ™»˝÷÷«Èøˆ
+    //µ⁄“ª÷÷∏√key“—æ≠¥Ê‘⁄£¨÷±Ω”∏¸–¬value÷µ
     LRUCache *s;
     HASH_FIND_INT(uthash,&key,s);
     if(s){
         s->value=value;
         ListDel(s);
         ListAdd(head,s);
-        return;//ÁªìÊùü
+        return;//Ω· ¯
     }
-    //Á¨¨‰∫åÁßçÊÉÖÂÜµÔºöÁºìÂ≠òÂ∑≤Êª°ÔºåÂà†ÊéâÈìæË°®Â∞æÁöÑËäÇÁÇπ
+    //µ⁄∂˛÷÷«Èøˆ£∫ª∫¥Ê“—¬˙£¨…æµÙ¡¥±ÌŒ≤µƒΩ⁄µ„
     else if(HASH_COUNT(uthash)==head->capacity){
-        //Ëé∑ÂæóÈìæË°®Â∞æËäÇÁÇπ
+        //ªÒµ√¡¥±ÌŒ≤Ω⁄µ„
         s=head->prev;
         ListDel(s);
         HASH_DEL(uthash,s);
         free(s);
     }
-    //Á¨¨‰∫åÔºå‰∏âÁßçÊÉÖÂÜµÔºö‰ªéÈìæË°®Â§¥ÊèíÂÖ•ËäÇÁÇπ
+    //µ⁄∂˛£¨»˝÷÷«Èøˆ£∫¥”¡¥±ÌÕ∑≤Â»ÎΩ⁄µ„
     s=(LRUCache *)malloc(sizeof(LRUCache));
     s->key=key;
     s->value=value;
@@ -80,12 +80,17 @@ void SetLRUCache(LRUCache *head,int key,int value){
 
 int main(){
     int get_value;
-    LRUCache *head=InitLRUCache(10);
+    LRUCache *head=InitLRUCache(2);
     SetLRUCache(head,1,10);
     SetLRUCache(head,2,20);
     SetLRUCache(head,3,30);
-    get_value=GetLRUCache(head,2);
-    printf("%d\n",get_value);
+    get_value=GetLRUCache(head,1);
+    if(get_value!=-1){
+        printf("%d\n",get_value);
+    }
+    else{
+        printf("∏√÷µ≤ª¥Ê‘⁄!\n");
+    }
     system("pause");
     return 0;
 }

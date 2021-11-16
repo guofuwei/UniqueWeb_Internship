@@ -1,4 +1,4 @@
-//åˆ©ç”¨å¹¶æŸ¥é›†è®¡ç®—æ— å‘å›¾æœ€å°ç”Ÿæˆæ ‘
+//ÀûÓÃ²¢²é¼¯¼ÆËãÎŞÏòÍ¼×îĞ¡Éú³ÉÊ÷
 #include <stdio.h>
 #include <stdlib.h>
 #define MAX_NUM 100
@@ -10,7 +10,7 @@ typedef struct MGraph
 {
 	char vexs[MAX_NUM];            
 	int arcs[MAX_NUM][MAX_NUM];     
-	int vexnum,arcnum;          //å½“å‰çš„é¡¶ç‚¹æ•°å’Œè¾¹æ•°
+	int vexnum,arcnum;          //µ±Ç°µÄ¶¥µãÊıºÍ±ßÊı
 }MGraph;
 
 typedef struct Edge{
@@ -22,7 +22,7 @@ typedef struct Edge{
 
 void Exchange(Edge *edge,int i,int j);
 void sort(Edge *edge,MGraph &G);
-int join(int* parent,int* son,int i,int j);//åˆå¹¶æ“ä½œ
+int join(int* parent,int* son,int i,int j);//ºÏ²¢²Ù×÷
 int LocateVex(MGraph &G, char v);
 void InitGraph(MGraph &G);
 int unionsearch(int* parent,int x);
@@ -45,13 +45,13 @@ void InitGraph(MGraph &G){
     char v1,v2;
     int m,n;
     int weight=MYINF;
-    printf("è¯·è¾“å…¥æ€»ç»“ç‚¹æ•°å’Œæ€»è¾¹æ•°:");
+    printf("ÇëÊäÈë×Ü½áµãÊıºÍ×Ü±ßÊı:");
     scanf("%d %d",&G.vexnum,&G.arcnum);
-    printf("è¯·ä¾æ¬¡è¾“å…¥ç‚¹çš„åç§°\n");
+    printf("ÇëÒÀ´ÎÊäÈëµãµÄÃû³Æ\n");
     for(i=0;i<G.vexnum;i++)
     {
         fflush(stdin);
-        printf("ç¬¬%dä¸ªç‚¹:",i+1);
+        printf("µÚ%d¸öµã:",i+1);
         scanf("%c",&G.vexs[i]);
     }
     for(i=0;i<G.vexnum;i++){
@@ -59,10 +59,10 @@ void InitGraph(MGraph &G){
             G.arcs[i][j]=MYINF;
         }
     }
-    printf("è¯·ä¾æ¬¡è¾“å…¥è¾¹çš„ä¸¤ç‚¹ä¿¡æ¯\n");
+    printf("ÇëÒÀ´ÎÊäÈë±ßµÄÁ½µãĞÅÏ¢\n");
     for(i=0;i<G.arcnum;i++){
         fflush(stdin);
-        printf("ç¬¬%dæ¡è¾¹:",i+1);
+        printf("µÚ%dÌõ±ß:",i+1);
         scanf("%c,%c,%d",&v1,&v2,&weight);
         m=LocateVex(G,v1);
         n=LocateVex(G,v2);
@@ -92,11 +92,11 @@ void MinSpanTree_Kruskal(MGraph &G){
             edge[k].begin=i;
             edge[k].end=j;
             edge[k].weight=G.arcs[i][j];
-            //é”Ÿæ–¤æ‹·é”Ÿæ–¤æ‹·end>begin
+            //Ò»°ãend>begin
             k++;
         }
     }
-    
+    //¶Ô±ßµÄÊı×é½øĞĞÉıĞòÅÅÁĞ
     sort(edge,G);
 
     for(i=0,k=0;i<G.arcnum;i++){
@@ -110,7 +110,7 @@ void MinSpanTree_Kruskal(MGraph &G){
             break;
         }
     }
-    printf("é”Ÿæ–¤æ‹·æƒé”Ÿæ–¤æ‹·ä¸º %d",sum);
+    printf("×ÜµÄÈ¨ÖµÎª%d",sum);
 }
 
 
@@ -144,7 +144,7 @@ void sort(Edge *edge,MGraph &G){
     //     printf("(%c,%c) %d\n",G.vexs[edge[i].begin],G.vexs[edge[i].end],edge[i].weight);
     // }
 }
-//Findå‡½æ•°ç”¨æ¥åˆ¤æ–­ä¸¤ä¸ªèŠ‚ç‚¹æ˜¯å¦å±äºåŒä¸€ä¸ªé›†åˆï¼Œä»è€Œæ¥åˆ¤æ–­æ˜¯å¦ä¼šå½¢æˆé—­ç¯
+//Findº¯ÊıÓÃÀ´ÅĞ¶ÏÁ½¸ö½ÚµãÊÇ·ñÊôÓÚÍ¬Ò»¸ö¼¯ºÏ£¬´Ó¶øÀ´ÅĞ¶ÏÊÇ·ñ»áĞÎ³É±Õ»·
 int Find(int* parent,int* son,int x,int y,int &root1,int &root2){
     root1 = unionsearch(parent,x);
 	root2 = unionsearch(parent,y);
@@ -153,11 +153,11 @@ int Find(int* parent,int* son,int x,int y,int &root1,int &root2){
     }
     return -1;
 }
-//å¯¹è¾¹çš„é›†åˆè¿›è¡Œåˆå¹¶
+//¶Ô±ßµÄ¼¯ºÏ½øĞĞºÏ²¢
 int join(int* parent,int* son,int x,int y){
     int root1,root2;
     int flag=Find(parent,son,x,y,root1,root2);
-	if(root1 == root2) //æ ¹èŠ‚ç‚¹ç›¸åŒï¼Œæ•…ä¸ºç¯è·¯
+	if(root1 == root2) //¸ù½ÚµãÏàÍ¬£¬¹ÊÎª»·Â·
 		return false;
 	else if(son[root1] >= son[root2])
 	{
@@ -172,7 +172,7 @@ int join(int* parent,int* son,int x,int y){
 	return true;
 }
 
-int unionsearch(int* parent,int x) //æŸ¥æ‰¾æ ¹ç»“ç‚¹
+int unionsearch(int* parent,int x) //²éÕÒ¸ù½áµã
 {
 	return x == parent[x] ? x : unionsearch(parent,parent[x]);
 }
@@ -180,7 +180,7 @@ int unionsearch(int* parent,int x) //æŸ¥æ‰¾æ ¹ç»“ç‚¹
 int main(){
     MGraph G;
     InitGraph(G);
-    printf("Kruskalç®—æ³•\n");
+    printf("KruskalËã·¨\n");
     MinSpanTree_Kruskal(G);
     system("pause");
     return 0;
