@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>Authority management</title>
+</head>
+<body>
+    <h3>权限修改</h3>
+    <hr>
+    <p>选择成员:<input type="text" class="name" name="name"></p>
+    <p>选择要修改的权限</p>
+    <p>
+        修改身份
+        <select  class="identify">
+            <option value="group_member">组员</option>
+            <option value="group_leader">组长</option>
+        </select>
+    </p>
+    <p>
+        <span>
+        编写日报
+        <select class="write_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+        <span>
+        查看他人日报
+        <select class="cat_other_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+        <span>
+        编辑他人日报
+        <select class="edit_other_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+        </span>
+    </p>
+    
+    <p><input type="button" value="上传" onclick="post()"></p>
+	<p><input type="reset" value="重置"></p>
+</body>
+<script>
+    // $.ajax({
+    //     type:"get",
+    //     url:"http://127.0.0.1:8000/aumanage",
+    //     beforeSend:function(request){
+    //         request.setRequestHeader("Authorization", login_token);
+    //     },
+    //     success:function(result){
+    //         if(200==result.code){
+    //             html_body+='<h3>权限修改</h3><hr>';
+    //             html_body+='<p>选择成员:<input type="text" class="name" name="name"></p>';
+    //             html_body+='<p>选择要修改的权限</p>';
+    //             html_body+='<label><input type="checkbox" name="identify" class="write_log">编写日报</label>';
+    //             html_body+='<label><input type="checkbox" name="identify" class="cat_other_log">查看他人日报</label>';
+    //             html_body+='<label><input type="checkbox" name="identify" class="edit_other_log">编写他人日报</label>';
+    //             html_body+='<p><input type="button" value="上传" onclick="post()"></p>';
+    //             html_body+='<p><input type="reset" value="重置"></p>';
+    //         }else{
+    //             alter(result.msg)
+    //             window.location.href='/login'
+    //         }
+    //     }
+    // })
+    function post(){
+        login_username=window.localStorage.getItem('login_username')
+        login_token=window.localStorage.getItem('login_token')
+		var name=$('.name').val();
+		var write_log=$('.write_log').val()
+        var cat_other_log=$('.cat_other_log').val();
+        var edit_other_log=$('.edit_other_log').val();
+        var identify=$('identify').val();
+		var post_data={'name':name,'write_log':write_log,'cat_other_log':cat_other_log,'edit_other_log':edit_other_log};
+		$.ajax({
+			type:'post',
+			contentType:'application/json',
+			dataType:'json',
+			data:JSON.stringify(post_data),
+			url:'http://127.0.0.1:8000/api/aumanage',
+            beforeSend:function(request){
+                request.setRequestHeader("Authorization", login_token)
+            },	
+			success: function(result){
+				if (result.code==200){
+					alert('修改成功');
+					window.location.href='/getlog';
+				}
+				else{
+					alert(result.msg)
+				}
+			}
+		})
+	}
+</script>
+</html>

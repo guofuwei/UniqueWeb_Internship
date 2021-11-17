@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>查看日志</title>
+</head>
+
+<body>
+    <div id='xss' style="display:none"></div>
+</body>
+<script>
+    $.ajax({
+        login_username = window.localStorage.getItem('login_username'),
+        login_token = window.localStorage.getItem('login_token'),
+        type: "get",
+        url: "http://127.0.0.1:8000/api/getlog",
+        beforeSend: function (request) {
+            request.setRequestHeader("Authorization", login_token);
+        },
+        success: function (result) {
+            if (200 == result.code) {
+                alter("请求成功");//
+                html_body += '<h3>查看日志</h3>';
+                var data = result.data;
+                if(data.length==0){
+                    html_body+='<p>空空如也</p>'
+                }else{
+                    for(var i in data){
+                        var type=data[i].type;
+                        var username=data[i].login_username;
+                        html_body+='<p>汇报人:'+username+'</p>';
+                        if(1==type){
+                            html_body+='<p>今日总结:'+data[i].data1+'</p>';
+                            html_body+='<p>明日计划:'+data[i].data2+'</p>';
+                            html_body+='<p>今日学习时长:'+data[i].data3+'</p>';
+                        }
+                        else if(2==type){
+                            html_body+='<p>汇报名称:'+data[i].data1+'</p>';
+                            html_body+='<p>汇报内容:'+data[i].data2+'</p>';
+                            html_body+='<p>今日学习时长:'+data[i].data3+'</p>';
+                        }
+                        else if(3==type){
+                            html_body+='<p>上周做了什么:'+data[i].data1+'</p>';
+                            html_body+='<p>这周的计划:'+data[i].data2+'</p>';
+                        }
+                        html_body+='<br><br>'
+                    }
+                }
+            }
+            else{
+                alter(result.msg);
+            }
+        }
+    })
+</script>
+
+</html>

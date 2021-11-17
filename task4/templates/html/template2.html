@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>模板二</title>
+</head>
+<body>
+    <h3>这里是模板二</h3>
+    <p>汇报名称<input type="text" class="title" name="title" cols="100" rows="10"></p>
+    <p>汇报内容<textarea class="content" name="content" cols="100" rows="10"></textarea></p>
+    <p>今日学习时长<input type="text" class="studyTime" name="studyTime">小时</p>
+    <p><input type="button" value="上传" onclick="post()"></p>
+	<p><input type="reset" value="重置"></p>
+</body>
+<script>
+    function post(){
+        login_username = window.localStorage.getItem('login_username');
+        login_token = window.localStorage.getItem('login_token');
+		var title=$('.title').val();
+		var content=$('.content').val()
+        var studyTime=$('.studyTime').val();
+		var post_data={'login_username':login_username,'title':title,'content':content,'studyTime':studyTime};
+		$.ajax({
+			type:'post',
+			contentType:'application/json',
+			dataType:'json',
+			data:JSON.stringify(post_data),
+			url:'http://127.0.0.1:8000/api/template/2',
+            beforeSend:function(request){
+                request.setRequestHeader("Authorization", login_token)
+            },
+			success: function(result){
+				if (result.code==200){
+					alert('发布成功');
+					window.location.href='/getlog';
+				}
+				else{
+					alert(result.msg);
+				}
+			}
+		})
+	}
+</script>
+</html>
