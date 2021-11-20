@@ -10,5 +10,5 @@ func main() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/html/*")
 	routers.LoadAllRouters(r)
-	r.Run(":8000")
+	r.Run("127.0.0.1:8000")
 }

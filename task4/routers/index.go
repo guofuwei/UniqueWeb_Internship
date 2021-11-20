@@ -8,6 +8,7 @@ import (
 
 func Loadindex(e *gin.Engine) {
 	e.GET("/index", indexHandle)
+	e.GET("", indexHandle)
 }
 
 func indexHandle(c *gin.Context) {

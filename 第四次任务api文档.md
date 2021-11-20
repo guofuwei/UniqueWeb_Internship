@@ -34,21 +34,21 @@ create table userinfo(
 * content
 * lastweekSummary
 * thisweekPlan
-* user_username,关联userinfo外键
+* username,关联userinfo外键
 
 ````sql
 create table loginfo(
-	id int primary key auto_increment not null,
-    type tinyint,
-    todaySummary varchar(200),
-    tomorrowPlan varchar(200),
-   	studyTime integer,
-    title varchar(30),
-    content varchar(200),
-    lastweekSummary varchar(200),
-    thisweekPlan varchar(200),
-    user_username varchar(30) not null,
-    FOREIGN KEY (user_username) REFERENCES userinfo(username)
+	ID int primary key auto_increment not null,
+    MyType tinyint,
+    TodaySummary varchar(200),
+    TomorrowPlan varchar(200),
+   	StudyTime integer,
+    Title varchar(30),
+    Content varchar(200),
+    LastweekSummary varchar(200),
+    ThisweekPlan varchar(200),
+    Username varchar(30) not null,
+    FOREIGN KEY (Username) REFERENCES userinfo(username)
 );
 ````
 

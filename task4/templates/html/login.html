@@ -12,7 +12,7 @@
         <h3>登录</h3>
 		<p>username: <input type="text" class="username" name="username"></p>
 		<p>password:<input type="password" name="password" class="password"></p>
-		<p><input type="button" value="上传" onclick="login()"></p>
+		<p><input type="button" value="登录" onclick="login()"></p>
 		<p><input type="reset" value="重置"></p>
     </div>
 </body>
@@ -29,9 +29,9 @@
 			url:'http://127.0.0.1:8000/api/login',	
 			success: function(result){
 				if (result.code==200){
-                    window.localStorage.setItem('login_username',result.message.username);
-                    window.localStorage.setItem('login_token',result.message.token);
 					alert('登录成功');
+                    window.localStorage.setItem('login_username',result.data.username);
+                    window.localStorage.setItem('login_token',result.data.token);
 					window.location.href='/index';
 				}
 				else{
