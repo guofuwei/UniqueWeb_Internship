@@ -52,8 +52,11 @@ create table loginfo(
 );
 ````
 
-no required module provides package github.com/gin-gonic/gin; to add it:
-	go get github.com/gin-gonic/gin (compile)
+````sql
+insert into loginfo values(1,1,"test","test",3,"test","test","test","test","test");
+````
+
+
 
 
 

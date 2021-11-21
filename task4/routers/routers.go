@@ -7,4 +7,6 @@ func LoadAllRouters(e *gin.Engine) {
 	LoadLog(e)
 	LoadTemplate(e)
 	Loadindex(e)
+	LoadOauth(e)
+	LoadAuthManage(e)
 }

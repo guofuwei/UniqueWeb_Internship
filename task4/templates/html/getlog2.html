@@ -14,24 +14,20 @@
 	<!-- <p><input type="button" value="登录" onclick="edit()"></p> -->
 </body>
 <script>
-    login_username = window.localStorage.getItem('login_username');
-    login_token = window.localStorage.getItem('login_token');
     // console.log(login_username);
     $.ajax({
         type: "get",
-        url: "http://127.0.0.1:8000/api/getlog",
-        beforeSend: function (request) {
-            request.setRequestHeader("Authorization", login_token);
-        },
+        url: "http://127.0.0.1:8000/api/getlog2",
         success: function (result) {
             if (200 == result.code) {
                 // alert("请求成功"); //
+                console.log(result)
                 html_body = '<h3>查看日志</h3><hr><hr>';
                 var data = result.data;
                 if (data.length == 0) {
                     html_body += '<p>空空如也</p>'
                 }
-                else if (!result.auth.catOtherLog){
+                else if(result.auth["catOtherLog"]=="0"){
                     alert("您没有权限查看")
                 }
                 else {
@@ -39,66 +35,59 @@
                         var MyType = data[i].MyType;
                         var Username = data[i].Username;
                         var Id = data[i].Id
-                        var logAuth=result.auth
+                        var auth=result.auth
                         html_body += '<p>汇报人:' + Username + '</p>';
                         if (1 == MyType) {
                             html_body += "<p>ID:" + Id + "</p>"
                             html_body += '<p>今日总结:' + data[i].TodaySummary + '</p>';
                             html_body += '<p>明日计划:' + data[i].TomorrowPlan + '</p>';
                             html_body += '<p>今日学习时长:' + data[i].StudyTime + '</p>';
-                            if (Username == login_username) {
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
-                            }
-                            else if(logAuth["editOtherLog"]){
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
+                            if(auth["editOtherLog"]=="1"){
+                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+'></p>';
                             }
                         } else if (2 == MyType) {
                             html_body += "<p>ID:" + Id + "</p>"
                             html_body += '<p>汇报名称:' + data[i].Title + '</p>';
                             html_body += '<p>汇报内容:' + data[i].Content + '</p>';
                             html_body += '<p>今日学习时长:' + data[i].StudyTime + '</p>';
-                            if (Username == login_username) {
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
-                            }
-                            else if(logAuth["editOtherLog"]){
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
+                            if(auth["editOtherLog"]=="1"){
+                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+'></p>';
                             }
                         } else if (3 == MyType) {
                             html_body += "<p>ID:" + Id + "</p>"
                             html_body += '<p>上周做了什么:' + data[i].LastweekSummary + '</p>';
                             html_body += '<p>这周的计划:' + data[i].ThisweekPlan + '</p>';
-                            if (Username == login_username) {
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
-                            }
-                            else if(logAuth["editOtherLog"]){
-                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+' mytype='+MyType+'></p>';
+                            if(auth["editOtherLog"]=="1"){
+                                html_body +='<p><input type="button" value="编辑" class="edit" data='+Id+'></p>';
                             }
                         }
                         html_body += '<hr>'
                     }
-                    
                 }
                 $('body').html(html_body);
                 $('.edit').on('click',function() {
                     var edit_id = $(this).attr('data');
-                    var mytype=$(this).attr('mytype');
                     console.log(edit_id)
-                    var edit_url = "http://127.0.0.1:8000/api/getlog/edit"+edit_id+"?" + 'log_id=' + edit_id+'&mytype='+mytype;
+                    var edit_url = "http://127.0.0.1:8000/api/getlog2/edit" + 'log_id=' + edit_id;
                     $.ajax({
                         // 请求方式
-                        type: "get",
+                        type: "post",
                         url: edit_url,
                         success: function (result) {
-                            window.location.href=edit_url
+                            if (200 == result.code) {
+                                //    alert('编辑成功');
+                                window.location.href = '/getlog'
+                            } else {
+                                alert('编辑失败');
+                            }
                         }
                     })
                 })
             } else {
                 alert(result.msg);
-                window.location.href = "/login"
+                window.location.href = "/login";
             }
         }
     })
-    
 </script>
 </html>

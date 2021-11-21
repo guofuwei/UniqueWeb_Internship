@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>授权页面</title>
+</head>
+<body>
+    <!-- <h3>第三方授权网站</h3><hr>
+    <p>选择要授予的权限</p>
+    <p>
+        <span>
+        编写日报
+        <select class="write_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+        <span>
+        查看他人日报
+        <select class="cat_other_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+        <span>
+        编辑他人日报
+        <select class="edit_other_log">
+            <option value="1">是</option>
+            <option value="0">否</option>
+        </select>
+        </span>
+    </p>
+    <p><input type="button" value="确定" onclick="post()"></p>
+	<p><input type="reset" value="重置"></p>
+    <p>username: <input type="text" class="username" name="username"></p>
+    <p>password:<input type="password" name="password" class="password"></p>
+    <p><input type="button" value="登录" onclick="login()"></p>
+    <p><input type="reset" value="重置"></p>
+    <p><input type="text" class="expiretime">授权有效期</p> -->
+</body>
+<script>
+    login_username = window.localStorage.getItem('login_username');
+    login_token = window.localStorage.getItem('login_token');
+    var url = document.location.toString();
+    var query_split = url.split('?');
+    var query_set = '';
+    if(query_split.length > 1){
+        query_set = query_split[1].split('&')[2];
+    }
+    var redirect_uri1=query_set.split("=")[1]// 得到回调地址
+    // console.log(redirect_uri1)
+    // window.sessionStorage.setItem('redirect_uri1',redirect_uri1)
+    $.ajax({
+        type: "get",
+        url: "http://127.0.0.1:8000/api/oauth/code",
+        beforeSend: function (request) {
+            request.setRequestHeader("Authorization", login_token);
+        },
+        success: function (result) {
+            if (200 == result.code) {
+                html_body='<h3>第三方授权网站</h3><hr><p>您已登录</p><p>选择要授予的权限</p><p>'
+                var logAuth=result.data;
+                if(logAuth["writeLog"]){
+                    html_body+='<span>编写日报<select class="write_log"><option value="1">是</option><option value="0">否</option></select></span>'
+                }
+                if(logAuth["catOtherLog"]){
+                    html_body+='<span>查看他人日报<select class="cat_other_log"><option value="1">是</option><option value="0">否</option></select></span>'
+                }
+                if(logAuth["editOtherLog"]){
+                    html_body+='<span>编辑他人日报<select class="edit_other_log"><option value="1">是</option><option value="0">否</option></select></span>'
+                }
+                html_body+='<p>授权有效期<input type="text" class="expiretime"></p>'
+                html_body+='</p><p><input type="button" value="确定" onclick="post()"></p><p><input type="reset" value="重置"></p>'
+            }
+            else{
+                html_body='<h3>第三方授权网站</h3><hr>'
+                html_body+='<p>您还未登录，请先登录</p>'
+                html_body+='<p>username: <input type="text" class="username" name="username"></p><p>password:<input type="password" name="password" class="password"></p><p><input type="button" value="登录" onclick="login()"></p><p><input type="reset" value="重置"></p>'
+            }
+            $('body').html(html_body);
+        }
+    })
+    function login(){
+		var username=$('.username').val();
+		var password=$('.password').val();
+		var post_data={'username':username,'password':password};
+		$.ajax({
+			type:'post',
+			contentType:'application/json',
+			dataType:'json',
+			data:JSON.stringify(post_data),
+			url:'http://127.0.0.1:8000/api/login',	
+			success: function(result){
+				if (result.code==200){
+					alert('登录成功');
+                    window.localStorage.setItem('login_username',result.data.username);
+                    window.localStorage.setItem('login_token',result.data.token);
+					location.reload();
+				}
+				else{
+					alert(result.msg)
+				}
+			}
+		})
+	}
+    function post(){
+        var write_log=$('.write_log').val();
+        var cat_other_log=$('.cat_other_log').val();
+        var edit_other_log=$('.edit_other_log').val();
+        var expiretime=$('.expiretime').val();
+        var post_data={'write_log':write_log,'cat_other_log':cat_other_log,'edit_other_log':edit_other_log,'redirect_uri1':redirect_uri1,'expiretime':expiretime};
+        $.ajax({
+                type:'post',
+                contentType:'application/json',
+                dataType:'json',
+                data:JSON.stringify(post_data),
+                url:'http://127.0.0.1:8000/api/oauth/code/post',
+                beforeSend:function(request){
+                    request.setRequestHeader("Authorization", login_token)
+                },	
+                success: function(result){
+                    if (result.code==200){
+                        // alert('授权成功');
+                        window.location.href=result.data["redictUrl"]
+                    }
+                    else{
+                        alert(result.msg)
+                    }
+                }
+            })
+        }
+</script>
+</html>
+
+<!-- html_body='<h3>第三方授权网站</h3><hr><p>您已登录!</p><p>选择要授予的权限</p><p><span>编写日报<select class="write_log"><option value="1">是</option><option value="0">否</option></select></span><span>查看他人日报<select class="cat_other_log"><option value="1">是</option><option value="0">否</option></select></span><span>编辑他人日报<select class="edit_other_log"><option value="1">是</option><option value="0">否</option></select></span></span></p><p><input type="button" value="确定" onclick="post()"></p><p><input type="reset" value="重置"></p>' -->

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>编辑页面</title>
+</head>
+
+<body>
+    
+</body>
+<script>
+    query = window.location.href.split("?")[1]
+    request_url = "http://127.0.0.1:8000/api/getlog/edit/data?" + query
+    log_id = query.split("&")[0].split("=")[1]
+    mytype = query.split("&")[1].split("=")[1]
+    console.log(log_id)
+    $.ajax({
+        type: "get",
+        url: request_url,
+        success: function (result) {
+            if (200 == result.code) {
+                html_body = '<h3>编辑日志</h3><hr><hr>';
+                var data = result.data;
+                if (data.length == 0) {
+                    html_body += '<p>空空如也</p>'
+                } 
+                else {
+                    html_body += '<p>汇报人:' + Username + '</p>';
+                    if(mytype=="2"){
+                        html_body+='<p>汇报名称<input type="text" class="title" name="title" value='+data.Title+'></p><p>汇报内容<textarea class="content" name="content" cols="100" rows="10">'+data.Content+'</textarea></p><p>今日学习时长<input type="text" class="studyTime" name="studyTime" value='+data.StudyTime+'>小时</p>'
+                    }
+                    html_body+='<p><input type="button" value="上传" onclick="post()"></p><p><input type="reset" value="重置"></p>'
+                }
+                $('body').html(html_body);
+            }
+            else{
+                alert(result.msg)
+            }
+        }
+        
+    })
+    function post(){
+		var title=$('.title').val();
+		var content=$('.content').val()
+        var studyTime=$('.studyTime').val();
+		var post_data={'log_id':log_id,'title':title,'content':content,'studyTime':studyTime};
+		$.ajax({
+			type:'post',
+			contentType:'application/json',
+			dataType:'json',
+			data:JSON.stringify(post_data),
+			url:'http://127.0.0.1:8000/api/log/update2',	
+			success: function(result){
+				if (result.code==200){
+					alert('发布成功');
+					window.location.href='/getlog';
+				}
+				else{
+					alert(result.msg);
+					window.location.href="/login";
+				}
+			}
+		})
+	}
+</script>
+
+</html>

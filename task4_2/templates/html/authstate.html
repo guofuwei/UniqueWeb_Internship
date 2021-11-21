@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <title>授权状态</title>
+</head>
+<body>
+    <h3>获取授权码成功</h3>
+    <p><input type="button" value="继续授权" onclick="go()"></p>
+</body>
+<script>
+    var url = document.location.toString();
+    var query_split = url.split('?');
+    var query_set = '';
+    if(query_split.length > 1){
+        query_set = query_split[1].split["&"];
+    }
+    var code=query_set[0].split("=")[1]
+    var expiretime =query_set[1].split("=")[1]
+    var request_url="http://127.0.0.1:8000/oauth/token?client_id=TEST_ID&grant_type==authorization_code&code="+code+"&redirect_uri=http:127.0.0.1:8001/thirdcatlog&expiretime="+expiretime
+    // console.log(code)
+    function go(){
+        $.ajax({
+            type:"get",
+            url:request_url,
+            success: function (result) {
+            if (200 == result.code) {
+            }
+            else{
+            }
+            $('body').html(html_body);
+        }
+        });
+        window.location.href=request_url;
+    }
+</script>
+</html>
