@@ -72,18 +72,13 @@
                     var edit_id = $(this).attr('data');
                     var mytype=$(this).attr('mytype');
                     console.log(edit_id)
-                    var edit_url = "http://127.0.0.1:8000/api/getlog/edit?" + 'log_id=' + edit_id+'&mytype='+mytype;
+                    var edit_url = "http://127.0.0.1:8000/api/getlog/edit" +mytype+ '?log_id=' + edit_id+'&mytype='+mytype;
                     $.ajax({
                         // 请求方式
-                        type: "post",
+                        type: "get",
                         url: edit_url,
                         success: function (result) {
-                            if (200 == result.code) {
-                                //    alert('编辑成功');
-                                window.location.href = '/getlog'
-                            } else {
-                                alert('编辑失败');
-                            }
+                            window.location.href = edit_url
                         }
                     })
                 })

@@ -29,7 +29,7 @@
                     html_body += '<p>空空如也</p>'
                 } 
                 else {
-                    html_body += '<p>汇报人:' + Username + '</p>';
+                    html_body += '<p>汇报人:' + data.Username + '</p>';
                     if(mytype=="1"){
                         html_body+='<p>今日总结<textarea  class="todaySummary" name="todaySummary" cols="100" rows="10">'+data.TodaySummary+'</textarea></p><p>明日计划<textarea class="tomorrowPlan" name="tomorrowPlan" cols="100" rows="10">'+data.TomorrowPlan+'</textarea></p><p>今日学习时长<input type="text" class="studyTime" name="studyTime" value='+data.StudyTime+'></p>'
                     }

@@ -10,11 +10,11 @@ import (
 )
 
 type CodePostStruct struct {
-	WriteLog     string `json:"write_log"`
-	CatOtherLog  string `json:"cat_other_log"`
-	EditOtherLog string `json:"edit_other_log"`
-	RedirectUri1 string `json:"redirect_uri1"`
-	Expiretime   string `json:"expiretime"`
+	WriteLog     string `json:"write_log,omitempty"`
+	CatOtherLog  string `json:"cat_other_log,omitempty"`
+	EditOtherLog string `json:"edit_other_log,omitempty"`
+	RedirectUri1 string `json:"redirect_uri1,omitempty"`
+	Expiretime   string `json:"expiretime,omitempty"`
 }
 
 func LoadOauth(e *gin.Engine) {
@@ -25,18 +25,6 @@ func LoadOauth(e *gin.Engine) {
 }
 
 func oauthCodeHandle(c *gin.Context) {
-	// responseType := c.Query("response_type")
-	// clientId := c.Query("client_id")
-	// redirectUrl := c.Query("redirect_uri")
-	// data := make(map[string]string, 1)
-	// data["redirectUrl1"] = redirectUrl
-	// if responseType != "code" || clientId != "TES_ID" {
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"code": 10601,
-	// 		"msg":  "非法请求",
-	// 		"data": data,
-	// 	})
-	// }
 	c.HTML(http.StatusOK, "oauth.html", gin.H{})
 }
 
@@ -95,10 +83,6 @@ func apiOauthCodePostHandle(c *gin.Context) {
 		log.Fatal(err)
 	}
 	redictUrl := json.RedirectUri1 + "?code=" + authCode + "&expiretime=" + json.Expiretime
-	// _, err = http.Post(redictUrl, "plain/text", nil)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 	data := make(map[string]string, 1)
 	data["redictUrl"] = redictUrl
 	c.JSON(http.StatusOK, gin.H{
@@ -106,7 +90,4 @@ func apiOauthCodePostHandle(c *gin.Context) {
 		"msg":  "",
 		"data": data,
 	})
-	// fmt.Println(redictUrl)
-	// c.Redirect(302, redictUrl)
-	// c.Abort()
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -55,8 +54,8 @@ func authStateHandle(c *gin.Context) {
 		log.Fatal(err)
 	}
 	time, _ := strconv.Atoi(expiretime)
-	fmt.Println("--------------------------------")
-	fmt.Println(time)
+	// fmt.Println("--------------------------------")
+	// fmt.Println(time)
 	c.SetCookie("authToken", authMsg.Data, 3600*time, "/", "", false, false)
 	// fmt.Println(string(b))
 	c.Redirect(http.StatusMovedPermanently, "getlog2")

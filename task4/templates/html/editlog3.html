@@ -29,7 +29,7 @@
                     html_body += '<p>空空如也</p>'
                 } 
                 else {
-                    html_body += '<p>汇报人:' + Username + '</p>';
+                    html_body += '<p>汇报人:' + data.Username + '</p>';
                     if(mytype=="3"){
                         html_body+='<p>上周做了什么<textarea  class="lastweekSummary" name="weekSummary" cols="100" rows="10">'+data.LastweekSummary+'</textarea></p><p>这周的计划<textarea class="thisweekPlan" name="thisweekPlan" cols="100" rows="10">'+data.ThisweekPlan+'</textarea></p>'
                     }
