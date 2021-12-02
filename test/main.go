@@ -1,69 +1,92 @@
 package main
 
 import (
-	"fmt"
-	"reflect"
+	"log"
+	"test/aes"
 )
 
-type Test struct {
-	ID   int `type:"integer"`
-	Name string
-}
+// func EncodeWrite(conn *net.TCPConn, bs []byte) (n int, err error) {
+// 	cipherText, err := aes.Encrypt(bs)
+// 	if err != nil {
+// 		return
+// 	}
+// 	return conn.Write(cipherText)
+// }
 
-type StructMsg struct {
-	FieldName  []string
-	FieldType  []string
-	FieldValue []interface{}
-}
+// func DecodeRead(conn *net.TCPConn, bs []byte) (n int, err error) {
+// 	n, err = conn.Read(bs)
+// 	if err != nil {
+// 		return
+// 	}
+// 	bs, err = aes.Decrypt(bs[0:n])
+// 	if err != nil {
+// 		return
+// 	}
+// 	return len(bs), nil
+// }
 
-func GetStructMsg(arg interface{}) (structmsg *StructMsg) {
-	structmsg = new(StructMsg)
-	structmsg.FieldName = make([]string, 2)
-	structmsg.FieldType = make([]string, 2)
-	structmsg.FieldValue = make([]interface{}, 2)
-	getType := reflect.TypeOf(arg)
-	getValue := reflect.ValueOf(arg)
-	for i := 0; i < getType.NumField(); i++ {
-		field := getType.Field(i)
-		value := getValue.Field(i).Interface()
-		structmsg.FieldName[i] = field.Name
-		structmsg.FieldType[i] = field.Type.Name()
-		structmsg.FieldValue[i] = value
-		// fmt.Println(reflect.TypeOf(value))
-		// fmt.Printf("%s: %v = %v\n", field.Name, field.Type, value)
-	}
-	return structmsg
-}
+// func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
+// 	buffer := make([]byte, 128)
+// 	for {
+// 		readCount, readErr := src.Read(buffer)
+// 		if readErr != nil {
+// 			if readErr != io.EOF {
+// 				return readErr
+// 			} else {
+// 				return nil
+// 			}
+// 		}
+// 		if readCount > 0 {
+// 			writeCount, writeErr := EncodeWrite(dst, buffer[0:readCount])
+// 			if writeErr != nil {
+// 				return writeErr
+// 			}
+// 			if readCount != writeCount {
+// 				return io.ErrShortWrite
+// 			}
+// 		}
+// 	}
+// }
 
-func getTest(arg interface{}) {
-	getType := reflect.TypeOf(arg)
-	getValue := reflect.ValueOf(arg)
-	for i := 0; i < getType.NumField(); i++ {
-		field := getType.Field(i)
-		value := getValue.Field(i).Interface()
-		// addr := get.Elem().Field(i)
-		// fmt.Println(addr)
-		// fieldinfo := field.Tag
-		// // fmt.Println(reflect.TypeOf(value))
-		// fmt.Println(fieldinfo.Get("type"))
-		fmt.Printf("%s: %v = %v", field.Name, field.Type, value)
-	}
-}
-
-func getTest2(arg interface{}) {
-	addr := reflect.ValueOf(arg).Elem().Field(0).Addr().Interface()
-	fmt.Println(addr)
-}
+// func DecodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
+// 	buffer := make([]byte, 128)
+// 	for {
+// 		readCount, readErr := DecodeRead(src, buffer)
+// 		if readErr != nil {
+// 			if readErr != io.EOF {
+// 				return readErr
+// 			} else {
+// 				return nil
+// 			}
+// 		}
+// 		if readCount > 0 {
+// 			writeCount, writeErr := dst.Write(buffer[0:readCount])
+// 			if writeErr != nil {
+// 				return writeErr
+// 			}
+// 			if readCount != writeCount {
+// 				return io.ErrShortWrite
+// 			}
+// 		}
+// 	}
+// }
 
 func main() {
-	// var s1 []string = []string{"hobby=10", "and", "ID=3"}
-	//将一系列字符串连接为一个字符串，之间用sep来分隔
-	// s2 := strings.Join(s1, " ")
-	// querystr := "select * from task2 " + s2 + ";"
-	// fmt.Println(querystr)
-	// test := Test{0, "test"}
-	// fmt.Println(test)
-	getTest2(&Test{})
-	// structmsg := GetStructMsg(test)
-	// fmt.Println(structmsg)
+	testData := []byte("this is a test data")
+	log.Println(testData)
+	println("-----------------------------------")
+	testData, err := aes.Encrypt(testData)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println(testData)
+	println("----------------------------------")
+	testData, err = aes.Decrypt(testData)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println(testData)
+	log.Println(string(testData))
 }

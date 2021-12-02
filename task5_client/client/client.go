@@ -33,6 +33,7 @@ func ListenLocal(listenAddrString, serverAddrString, agreeMentString string) err
 		return err
 	}
 	defer localListener.Close()
+	log.Println("local start successed!")
 
 	for {
 		localClient, err := localListener.AcceptTCP()
@@ -48,49 +49,50 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 	if err != nil {
 		log.Fatal("远程服务器连接错误")
 	}
-	defer serverSocket.Close()
+	// serverSocket.SetKeepAlive(true)
+	// defer serverSocket.Close()
 
 	if argeeMentString == "http" {
-		// 开始建立socks5协议
+		// // 开始建立socks5协议
 		buffer := make([]byte, 1024)
-		// 1.发送建立连接请求
-		_, err := serverSocket.Write([]byte{0x05, 0x01, 0x02})
-		if err != nil {
-			log.Fatal(err)
-		}
-		// 读取回复
-		n, err := serverSocket.Read(buffer[:2])
-		if err != nil {
-			log.Fatal(err)
-		}
-		if n == 0 {
-			log.Fatal("协议错误，服务器返回为空")
-		}
-		if buffer[1] == 0x02 && n == 2 {
-			log.Println("连接成功")
-		}
-		// 2.传输UNAME和PASSWD
-		uName := []byte(config.USERNAME)
-		passwd := []byte(config.PASSWORD)
-		uLen := len(uName)
-		pLen := len(passwd)
-		var temp []byte
-		temp = append(temp, 0x5, byte(uLen))
-		temp = append(temp, uName...)
-		temp = append(temp, byte(pLen))
-		temp = append(temp, passwd...)
-		serverSocket.Write(temp)
-		// 读取服务端的回复
-		_, err = serverSocket.Read(buffer[:2])
-		if err != nil {
-			log.Fatal(err)
-		}
-		if buffer[1] != 0x0 {
-			log.Fatal("鉴权失败")
-		}
+		// // 1.发送建立连接请求
+		// _, err := serverSocket.Write([]byte{0x05, 0x01, 0x02})
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// // 读取回复
+		// n, err := serverSocket.Read(buffer[:2])
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// if n == 0 {
+		// 	log.Fatal("协议错误，服务器返回为空")
+		// }
+		// if buffer[1] == 0x02 && n == 2 {
+		// 	log.Println("连接成功")
+		// }
+		// // 2.传输UNAME和PASSWD
+		// uName := []byte(config.USERNAME)
+		// passwd := []byte(config.PASSWORD)
+		// uLen := len(uName)
+		// pLen := len(passwd)
+		// var temp []byte
+		// temp = append(temp, 0x5, byte(uLen))
+		// temp = append(temp, uName...)
+		// temp = append(temp, byte(pLen))
+		// temp = append(temp, passwd...)
+		// serverSocket.Write(temp)
+		// // 读取服务端的回复
+		// _, err = serverSocket.Read(buffer[:2])
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// if buffer[1] != 0x0 {
+		// 	log.Fatal("鉴权失败")
+		// }
 		// 3.开始读取请求消息
 		// VER, CMD, RSV, ATYP, ADDR, PORT
-		n, err = localClient.Read(buffer)
+		n, err := localClient.Read(buffer)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -122,7 +124,7 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 		} else {
 			log.Fatal("url parse error")
 		}
-		resp := []byte{0x05, 0x01, 0x00, 0x03}
+		resp := []byte{}
 		resp = append(resp, byte(len([]byte(dstAddr))))
 		resp = append(resp, []byte(dstAddr)...)
 		// 端口
@@ -161,6 +163,7 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 
 	} else {
 		//这里是socks5协议，应该先截取socks5头部然后读取destAddr
+		buffer := make([]byte, 128)
 		err = core.Socks5AuthHandle(localClient)
 		if err != nil {
 			log.Fatal("auth error" + err.Error())
@@ -172,21 +175,36 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 		//开始使用自己的协议与server通信
 		// 1.发送host长度帧，发送host帧
 		destLen := len(destAddrString)
-		serverSocket.Write([]byte{byte(destLen)})
-		serverSocket.Write([]byte(destAddrString))
-		// 2.安全io copy
+		// log.Printf("destLen:%d", destLen)
+		// log.Printf("destAddrString:%s", destAddrString)
+		_, err = serverSocket.Write([]byte{byte(destLen)})
+		if err != nil {
+			log.Println("send destLen error:" + err.Error())
+			return
+		}
+		_, err = serverSocket.Write([]byte(destAddrString))
+		if err != nil {
+			log.Println("send destAddr error:" + err.Error())
+			return
+		}
+		_, err = serverSocket.Read(buffer[:1])
+		if err != nil {
+			log.Println("server can't get the destSocket:" + err.Error())
+			return
+		}
+		// 2.转发消息
 		go func() {
 			err = core.EncodeCopy(localClient, serverSocket)
 			if err != nil {
+				log.Println("client EncodeCpoy err:" + err.Error())
 				localClient.Close()
-				serverSocket.Close()
 				return
 			}
 		}()
 		go func() {
 			err = core.DecodeCopy(serverSocket, localClient)
 			if err != nil {
-				localClient.Close()
+				log.Println("client DecodeCpoy err:" + err.Error())
 				serverSocket.Close()
 				return
 			}
@@ -200,7 +218,7 @@ func DialRemote(serverAddr *net.TCPAddr) (serverSocket *net.TCPConn, err error) 
 	if err != nil {
 		log.Fatal("远程服务器连接错误")
 	}
-	defer serverSocket.Close()
+	// defer serverSocket.Close()
 	// 2.开始进行身份验证
 	// 发送uLen,uName,pLen,passwd
 	uName := config.USERNAME
@@ -214,10 +232,7 @@ func DialRemote(serverAddr *net.TCPAddr) (serverSocket *net.TCPConn, err error) 
 	// 开始接受身份确认信息
 	buffer := make([]byte, 128)
 	serverSocket.Read(buffer[:1])
-	if buffer[0] == 0x0 {
-		log.Println("身份验证成功")
-	} else {
-		log.Println("身份验证失败")
+	if buffer[0] != 0x0 {
 		return nil, errors.New("remote server auth fail")
 	}
 	return serverSocket, nil

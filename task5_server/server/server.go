@@ -8,14 +8,21 @@ import (
 	"task5_server/core"
 )
 
-func ListenServer(listenAddr *net.TCPAddr) {
+func ListenServer(listenAddrString string) {
+	listenAddr, err := net.ResolveTCPAddr("tcp", listenAddrString)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	serverListener, err := net.ListenTCP("tcp", listenAddr)
 	if err != nil {
 		log.Fatal("服务器监听端口错误")
 	}
 	defer serverListener.Close()
+	log.Println("server start successed!")
 	for {
 		serverClient, err := serverListener.AcceptTCP()
+		// println("a new connect establish")
 		if err != nil {
 			log.Println(err)
 			continue
@@ -26,18 +33,15 @@ func ListenServer(listenAddr *net.TCPAddr) {
 }
 
 func handleServerClient(serverClient *net.TCPConn) {
+	// 先进行权限的认证
 	err := localAuthHandle(serverClient)
 	if err != nil {
 		log.Println(err)
 		serverClient.Close()
 		return
 	}
+	// 获取目标地址
 	destSocket, err := localDestHandle(serverClient)
-	if err != nil {
-		log.Println(err)
-		serverClient.Close()
-		return
-	}
 	if err != nil {
 		log.Println(err)
 		serverClient.Close()
@@ -47,15 +51,15 @@ func handleServerClient(serverClient *net.TCPConn) {
 	go func() {
 		err = core.EncodeCopy(destSocket, serverClient)
 		if err != nil {
+			log.Println("server EncodeCpoy err:" + err.Error())
 			destSocket.Close()
-			serverClient.Close()
 			return
 		}
 	}()
 	go func() {
 		err = core.DecodeCopy(serverClient, destSocket)
 		if err != nil {
-			destSocket.Close()
+			log.Println("server DecodeCpoy err:" + err.Error())
 			serverClient.Close()
 			return
 		}
@@ -111,6 +115,7 @@ func localDestHandle(serverClient *net.TCPConn) (*net.TCPConn, error) {
 		return nil, errors.New("get destLen error :" + err.Error())
 	}
 	destLen := int(buffer[0])
+	// log.Printf("destLen:%d", destLen)
 	n, err := serverClient.Read(buffer[:destLen])
 	if err != nil {
 		return nil, errors.New("read destAddr error :" + err.Error())
@@ -120,12 +125,18 @@ func localDestHandle(serverClient *net.TCPConn) (*net.TCPConn, error) {
 	}
 	destAddrString := string(buffer[:destLen])
 	destAddr, err := net.ResolveTCPAddr("tcp", destAddrString)
+	log.Printf("destAddr is:%v", destAddr)
 	if err != nil {
 		return nil, err
 	}
 	destSocket, err := net.DialTCP("tcp", nil, destAddr)
 	if err != nil {
 		return nil, err
+	}
+	// 返回拿取destAddr成功
+	_, err = serverClient.Write([]byte{0x0})
+	if err != nil {
+		return nil, errors.New("get destAddr error:" + err.Error())
 	}
 	return destSocket, nil
 }

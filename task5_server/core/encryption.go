@@ -2,33 +2,36 @@ package core
 
 import (
 	"io"
+	"log"
 	"net"
 )
 
 func EncodeWrite(conn *net.TCPConn, bs []byte) (n int, err error) {
-	cipherText, err := AesEncrypt(bs)
+	cipherText, err := Encrypt(bs)
 	if err != nil {
 		return
 	}
 	return conn.Write(cipherText)
 }
 
-func DecodeRead(conn *net.TCPConn, bs []byte) (n int, err error) {
+func DecodeRead(conn *net.TCPConn, bs []byte) (plainText []byte, n int, err error) {
 	n, err = conn.Read(bs)
 	if err != nil {
 		return
 	}
-	bs, err = AesDecrypt(bs[0:n])
+	plainText, err = Decrypt(bs[0:n])
 	if err != nil {
 		return
 	}
-	return len(bs), nil
+	return plainText, len(plainText), nil
 }
 
 func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 	buffer := make([]byte, 128)
 	for {
 		readCount, readErr := src.Read(buffer)
+		// log.Println("server send:")
+		// log.Println(buffer[:readCount])
 		if readErr != nil {
 			if readErr != io.EOF {
 				return readErr
@@ -37,13 +40,15 @@ func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 			}
 		}
 		if readCount > 0 {
-			writeCount, writeErr := EncodeWrite(dst, buffer[0:readCount])
+			_, writeErr := EncodeWrite(dst, buffer[0:readCount])
 			if writeErr != nil {
 				return writeErr
 			}
-			if readCount != writeCount {
-				return io.ErrShortWrite
-			}
+			// if readCount != writeCount {
+			// 	log.Printf("EncodeCopy:readCount:%d\n", readCount)
+			// 	log.Printf("EncodeCopy:writecount:%d\n", writeCount)
+			// 	return io.ErrShortWrite
+			// }
 		}
 	}
 }
@@ -51,7 +56,10 @@ func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 func DecodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 	buffer := make([]byte, 128)
 	for {
-		readCount, readErr := DecodeRead(src, buffer)
+		plainText, readCount, readErr := DecodeRead(src, buffer)
+		// log.Println("server recv:")
+		// log.Println(buffer[:readCount])
+		// log.Println(buffer)
 		if readErr != nil {
 			if readErr != io.EOF {
 				return readErr
@@ -60,11 +68,13 @@ func DecodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 			}
 		}
 		if readCount > 0 {
-			writeCount, writeErr := dst.Write(buffer[0:readCount])
+			writeCount, writeErr := dst.Write(plainText)
 			if writeErr != nil {
 				return writeErr
 			}
 			if readCount != writeCount {
+				log.Printf("DecodeCopy:readCount:%d\n", readCount)
+				log.Printf("DecodeCopy:writecount:%d\n", writeCount)
 				return io.ErrShortWrite
 			}
 		}

@@ -16,6 +16,9 @@ func Socks5AuthHandle(client *net.TCPConn) error {
 	}
 	// 1.首先读取VER和NMETHODS
 	ver, nMethods := int(buffer[0]), int(buffer[1])
+	// log.Print("sockauth:")
+	// log.Println(buffer)
+	// log.Printf("ver:%d,nMethods:%d\n", ver, nMethods)
 	if ver != 5 {
 		return errors.New("invalid socks5 version")
 	}

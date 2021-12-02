@@ -1,11 +1,11 @@
-package core
+package aes
 
 import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"log"
-	"task5_server/config"
+	"test/config"
 )
 
 var key = []byte(config.REQ_KEY)

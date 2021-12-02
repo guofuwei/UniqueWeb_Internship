@@ -16,11 +16,15 @@ func Socks5DestHandle(client *net.TCPConn) (string, error) {
 		return "", errors.New("sockdest error :" + err.Error())
 	}
 	ver, cmd, _, atyp := buffer[0], buffer[1], buffer[2], buffer[3]
+	// log.Print("desthandle:")
+	// log.Println(buffer)
+	// log.Printf("ver:%d,cmd:%d,atyp:%d", ver, cmd, atyp)
 	if ver != 5 || cmd != 1 {
 		// 目前只支持connect方式
 		return "", errors.New("invalid socks5 version/cmd")
 	}
 	// 开始解析ipaddr
+	// log.Printf("The atyp:%d\n", atyp)
 	addr := ""
 	switch atyp {
 	case 1:
@@ -60,5 +64,12 @@ func Socks5DestHandle(client *net.TCPConn) (string, error) {
 	// if err != nil {
 	// 	return nil, errors.New("dial error:" + err.Error())
 	// }
+	// log.Println("The destAddrPort:" + destAddrPort)
+	// 回复浏览器
+	_, err = client.Write([]byte{0x05, 0x00, 0x00, 0x01, 0, 0, 0, 0, 0, 0})
+	if err != nil {
+		client.Close()
+		return "", errors.New("write conn rsp: " + err.Error())
+	}
 	return destAddrPort, nil
 }
