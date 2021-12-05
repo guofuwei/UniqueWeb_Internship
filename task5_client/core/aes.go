@@ -5,8 +5,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"log"
+
 	"task5_client/config"
 )
+
+const BlockSize = 128
 
 var key = []byte(config.REQ_KEY)
 var iv = []byte(config.REQ_IV)
@@ -19,9 +22,7 @@ func Encrypt(text []byte) ([]byte, error) {
 		return nil, err
 	}
 	//填充内容，如果不足16位字符
-	blockSize := block.BlockSize()
-	originData := pad(text, blockSize)
-	// log.Println(originData)
+	originData := pad(text, BlockSize)
 	//加密方式
 	blockMode := cipher.NewCBCEncrypter(block, iv)
 	//加密，输出到[]byte数组
@@ -32,12 +33,12 @@ func Encrypt(text []byte) ([]byte, error) {
 }
 
 func pad(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	padding := blockSize - len(ciphertext)
+	padtext := bytes.Repeat([]byte{0x0}, padding)
 	return append(ciphertext, padtext...)
 }
 
-func Decrypt(decode_data []byte) ([]byte, error) {
+func Decrypt(decode_data []byte, sign int) ([]byte, error) {
 	// decode_data, err := base64.StdEncoding.DecodeString(text)
 	// if err != nil {
 	// 	return nil, nil
@@ -52,12 +53,17 @@ func Decrypt(decode_data []byte) ([]byte, error) {
 	// log.Println(origin_data)
 	// log.Println(unpad(origin_data))
 	//去除填充,并返回
-	return unpad(origin_data), nil
+	return unpad(origin_data, sign), nil
 }
 
-func unpad(ciphertext []byte) []byte {
-	length := len(ciphertext)
+func unpad(ciphertext []byte, sign int) []byte {
+	// log.Println("func unpad:")
+	// log.Println(ciphertext)
+	// length := len(ciphertext)
+	// log.Printf("length:%d", length)
 	//去掉最后一次的padding
-	unpadding := int(ciphertext[length-1])
-	return ciphertext[:(length - unpadding)]
+	// unpadding := int(ciphertext[length-1])
+	// return ciphertext[:(length - unpadding)]
+	unpadSign := BlockSize - sign
+	return ciphertext[:unpadSign]
 }

@@ -31,7 +31,7 @@ func main() {
 
 func HandleClient(client *net.TCPConn) {
 	defer client.Close()
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 1024*1024)
 	n, err := client.Read(buffer)
 	if err != nil {
 		log.Println(err)

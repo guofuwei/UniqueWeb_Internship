@@ -51,18 +51,16 @@ func handleServerClient(serverClient *net.TCPConn) {
 	go func() {
 		err = core.EncodeCopy(destSocket, serverClient)
 		if err != nil {
-			log.Println("server EncodeCpoy err:" + err.Error())
-			destSocket.Close()
-			return
+			log.Println("server EncodeCopy err:" + err.Error())
 		}
+		destSocket.Close()
 	}()
 	go func() {
 		err = core.DecodeCopy(serverClient, destSocket)
 		if err != nil {
 			log.Println("server DecodeCpoy err:" + err.Error())
-			serverClient.Close()
-			return
 		}
+		serverClient.Close()
 	}()
 }
 

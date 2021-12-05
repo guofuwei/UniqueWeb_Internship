@@ -7,21 +7,29 @@ import (
 )
 
 func EncodeWrite(conn *net.TCPConn, bs []byte) (n int, err error) {
+	sign := BlockSize - len(bs)
+	// log.Printf("sign:%d", sign) //
+	// log.Println("plainText:")
+	// log.Println(bs)
+	conn.Write([]byte{byte(sign)})
 	cipherText, err := Encrypt(bs)
 	if err != nil {
 		return
 	}
-	// log.Println("client send:")
-	// log.Println(cipherText)
 	return conn.Write(cipherText)
 }
 
 func DecodeRead(conn *net.TCPConn, bs []byte) (plainText []byte, n int, err error) {
+	_, err = conn.Read(bs[:1])
+	if err != nil {
+		return
+	}
+	sign := int(bs[0])
 	n, err = conn.Read(bs)
 	if err != nil {
 		return
 	}
-	plainText, err = Decrypt(bs[0:n])
+	plainText, err = Decrypt(bs[0:n], sign)
 	if err != nil {
 		return
 	}
@@ -29,10 +37,11 @@ func DecodeRead(conn *net.TCPConn, bs []byte) (plainText []byte, n int, err erro
 }
 
 func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, BlockSize)
 	for {
 		readCount, readErr := src.Read(buffer)
-		// log.Println(buffer[:10])
+		// log.Println("server send:")
+		// log.Println(buffer[:readCount])
 		if readErr != nil {
 			if readErr != io.EOF {
 				return readErr
@@ -55,11 +64,12 @@ func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 }
 
 func DecodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, BlockSize)
 	for {
 		plainText, readCount, readErr := DecodeRead(src, buffer)
-		// log.Println("client recv:")
-		// log.Println(plainText)
+		// log.Println("server recv:")
+		// log.Println(buffer[:readCount])
+		// log.Println(buffer)
 		if readErr != nil {
 			if readErr != io.EOF {
 				return readErr

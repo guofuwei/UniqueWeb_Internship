@@ -7,6 +7,8 @@ import (
 )
 
 func EncodeWrite(conn *net.TCPConn, bs []byte) (n int, err error) {
+	sign := BlockSize - len(bs)
+	conn.Write([]byte{byte(sign)})
 	cipherText, err := Encrypt(bs)
 	if err != nil {
 		return
@@ -15,11 +17,19 @@ func EncodeWrite(conn *net.TCPConn, bs []byte) (n int, err error) {
 }
 
 func DecodeRead(conn *net.TCPConn, bs []byte) (plainText []byte, n int, err error) {
+	_, err = conn.Read(bs[:1])
+	if err != nil {
+		return
+	}
+	sign := int(bs[0])
+	// log.Printf("sign:%d", sign)
 	n, err = conn.Read(bs)
 	if err != nil {
 		return
 	}
-	plainText, err = Decrypt(bs[0:n])
+	plainText, err = Decrypt(bs[0:n], sign)
+	// log.Println("plainText:")
+	// log.Println(plainText)
 	if err != nil {
 		return
 	}
@@ -27,7 +37,7 @@ func DecodeRead(conn *net.TCPConn, bs []byte) (plainText []byte, n int, err erro
 }
 
 func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
-	buffer := make([]byte, 128)
+	buffer := make([]byte, BlockSize)
 	for {
 		readCount, readErr := src.Read(buffer)
 		// log.Println("server send:")
@@ -54,7 +64,7 @@ func EncodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
 }
 
 func DecodeCopy(src *net.TCPConn, dst *net.TCPConn) error {
-	buffer := make([]byte, 128)
+	buffer := make([]byte, BlockSize)
 	for {
 		plainText, readCount, readErr := DecodeRead(src, buffer)
 		// log.Println("server recv:")

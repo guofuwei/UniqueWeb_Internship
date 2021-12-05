@@ -1,13 +1,11 @@
 package client
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"net/url"
-	"strconv"
 	"strings"
 	"task5_client/config"
 	"task5_client/core"
@@ -54,7 +52,7 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 
 	if argeeMentString == "http" {
 		// // 开始建立socks5协议
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 256)
 		// // 1.发送建立连接请求
 		// _, err := serverSocket.Write([]byte{0x05, 0x01, 0x02})
 		// if err != nil {
@@ -90,7 +88,8 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 		// if buffer[1] != 0x0 {
 		// 	log.Fatal("鉴权失败")
 		// }
-		// 3.开始读取请求消息
+
+		// 开始读取请求消息
 		// VER, CMD, RSV, ATYP, ADDR, PORT
 		n, err := localClient.Read(buffer)
 		if err != nil {
@@ -124,43 +123,69 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 		} else {
 			log.Fatal("url parse error")
 		}
-		resp := []byte{}
-		resp = append(resp, byte(len([]byte(dstAddr))))
-		resp = append(resp, []byte(dstAddr)...)
-		// 端口
-		dstPortBuff := bytes.NewBuffer(make([]byte, 0))
-		dstPortInt, err := strconv.ParseUint(dstPort, 10, 16)
+
+		destAddrString := fmt.Sprintf("%s:%s", dstAddr, dstPort)
+		destLen := len(destAddrString)
+		_, err = serverSocket.Write([]byte{byte(destLen)})
 		if err != nil {
-			log.Fatal(err)
+			log.Println("send destLen error:" + err.Error())
+			return
 		}
-		binary.Write(dstPortBuff, binary.BigEndian, dstPortInt)
-		dstPortBytes := dstPortBuff.Bytes() // int为8字节
-		resp = append(resp, dstPortBytes[len(dstPortBytes)-2:]...)
-		// 发送Addr,Port
-		_, err = serverSocket.Write(resp)
+		_, err = serverSocket.Write([]byte(destAddrString))
 		if err != nil {
-			log.Fatal(err)
+			log.Println("send destAddr error:" + err.Error())
+			return
+		}
+		_, err = serverSocket.Read(buffer[:1])
+		if err != nil {
+			log.Println("server can't get the destSocket:" + err.Error())
+			return
+		}
+		// // 端口
+		// dstPortBuff := bytes.NewBuffer(make([]byte, 0))
+		// dstPortInt, err := strconv.ParseUint(dstPort, 10, 16)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// binary.Write(dstPortBuff, binary.BigEndian, dstPortInt)
+		// dstPortBytes := dstPortBuff.Bytes() // int为8字节
+		// resp = append(resp, dstPortBytes[len(dstPortBytes)-2:]...)
+
+		_, err = core.EncodeWrite(serverSocket, buffer[:128])
+		if err != nil {
+			log.Println("client EncodeWrite err:" + err.Error())
+		}
+		_, err = core.EncodeWrite(serverSocket, buffer[128:])
+		if err != nil {
+			log.Println("client EncodeWrite err:" + err.Error())
 		}
 		// 读取回复消息
-		n, err = serverSocket.Read(resp)
-		if err != nil {
-			log.Fatal(err)
-		}
-		var targetResp [10]byte
-		copy(targetResp[:10], resp[:n])
-		specialResp := [10]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
-		if targetResp != specialResp {
-			log.Fatal("协议错误, 第二次协商返回出错")
-		}
-		log.Print("认证成功")
+		// n, err = serverSocket.Read(resp)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+		// var targetResp [10]byte
+		// copy(targetResp[:10], resp[:n])
+		// specialResp := [10]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+		// if targetResp != specialResp {
+		// 	log.Fatal("协议错误, 第二次协商返回出错")
+		// }
+		// log.Print("认证成功")
 		// 转发消息
 		go func() {
-			serverSocket.Write(localReq)
+			err = core.EncodeCopy(localClient, serverSocket)
+			if err != nil {
+				log.Println("client EncodeCpoy err:" + err.Error())
+			}
+			localClient.Close()
 		}()
 		go func() {
-			// core.Socks5Forward(localClient, serverSocket)
+			err = core.DecodeCopy(serverSocket, localClient)
+			if err != nil {
+				log.Println("client DecodeCpoy err:" + err.Error())
+			}
+			serverSocket.Close()
 		}()
-
 	} else {
 		//这里是socks5协议，应该先截取socks5头部然后读取destAddr
 		buffer := make([]byte, 128)
@@ -197,17 +222,15 @@ func handleLocalClient(localClient *net.TCPConn, serverAddr *net.TCPAddr, argeeM
 			err = core.EncodeCopy(localClient, serverSocket)
 			if err != nil {
 				log.Println("client EncodeCpoy err:" + err.Error())
-				localClient.Close()
-				return
 			}
+			localClient.Close()
 		}()
 		go func() {
 			err = core.DecodeCopy(serverSocket, localClient)
 			if err != nil {
 				log.Println("client DecodeCpoy err:" + err.Error())
-				serverSocket.Close()
-				return
 			}
+			serverSocket.Close()
 		}()
 	}
 }
